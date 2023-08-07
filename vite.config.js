@@ -6,7 +6,7 @@ export default defineConfig({
   base: process.env.BASE,
   build: {
     emptyOutDir: true,
-    outDir: '../dist'
+    outDir: './dist'
   },
   plugins: [react()],
 })
