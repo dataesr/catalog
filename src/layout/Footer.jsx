@@ -12,9 +12,9 @@ import {
 
 const {
   VITE_APP_NAME,
-  VITE_MINISTER_NAME,
   VITE_DESCRIPTION,
   VITE_GIT_REPOSITORY_URL,
+  VITE_MINISTER_NAME,
   VITE_VERSION,
 } = import.meta.env;
 

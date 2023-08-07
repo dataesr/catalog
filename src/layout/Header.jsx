@@ -11,10 +11,10 @@ import {
 
 const {
   VITE_APP_NAME,
+  VITE_DESCRIPTION,
   VITE_HEADER_TAG,
   VITE_HEADER_TAG_COLOR,
   VITE_MINISTER_NAME,
-  VITE_DESCRIPTION,
 } = import.meta.env;
 
 export default function Header({ switchTheme }) {
