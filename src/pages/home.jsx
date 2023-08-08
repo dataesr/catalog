@@ -74,7 +74,7 @@ export default function Home() {
 
   useEffect(() => {
     async function fetchRepositories({ page, allTools }) {
-      const octokit = new Octokit({ auth: VITE_GIT_PAT });
+      const octokit = VITE_GIT_PAT ? new Octokit({ auth: VITE_GIT_PAT }) : new Octokit();
       const repositories = await octokit.request(`GET /orgs/{org}/repos?sort=updated&page=${page}`, { org: 'dataesr' });
       const toolsTmp = repositories.data.map((tool) => {
         return {
