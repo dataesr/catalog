@@ -16,6 +16,8 @@ import { useEffect, useState } from 'react';
 
 import servicesData from '../data/services.json';
 
+const { VITE_GIT_PAT } = import.meta.env;
+
 // 5 minutes
 const GITHUB_PER_PAGE = 30;
 const REFRESH_INTERVAL = 300000;
@@ -71,27 +73,24 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-    async function fetchRepositories({ page }) {
-      const octokit = new Octokit();
-      const repositories = await octokit.request(`GET /orgs/{org}/repos?sort=updated&page=${page}`, {
-        org: 'dataesr',
-        headers: {
-          'X-GitHub-Api-Version': '2022-11-28'
-        }
+    async function fetchRepositories({ page, allTools }) {
+      const octokit = new Octokit({ auth: VITE_GIT_PAT });
+      const repositories = await octokit.request(`GET /orgs/{org}/repos?sort=updated&page=${page}`, { org: 'dataesr' });
+      const toolsTmp = repositories.data.map((tool) => {
+        return {
+          ...tool,
+          label: tool?.name,
+          license: tool?.license?.name,
+          url: tool?.homepage,
+        };
       });
-      const toolsTmp = repositories.data.map((tool) => ({
-        ...tool,
-        label: tool?.name,
-        license: tool?.license?.name,
-        tags: [tool?.language, ...tool?.topics],
-        url: tool?.homepage,
-      }));
-      setTools([...tools, ...toolsTmp]);
       if (toolsTmp.length === GITHUB_PER_PAGE) {
-        fetchRepositories({ page: page + 1 });
+        fetchRepositories({ page: page + 1, allTools: [...allTools, ...toolsTmp] });
+      } else {
+        setTools([...allTools, ...toolsTmp]);
       }
     }
-    fetchRepositories({ page: 1 });
+    fetchRepositories({ page: 1, allTools: tools });
   }, []);
 
   return (
@@ -103,34 +102,39 @@ export default function Home() {
               <Card
                 href={tool?.url}
               >
-                <CardTitle>
-                  {tool.label}
-                  {' '}
-                  <Icon name={tool?.private ? 'ri-lock-unlock-line' : 'ri-lock-unlock-line'} />
-                </CardTitle>
                 <CardDescription>
-                  {tool?.license && (
-                    <div>
-                      <Icon name='ri-scales-3-line' />
-                      {tool.license}
-                    </div>
-                  )}
+                  <h4>
+                    {tool.label}
+                    {' '}
+                    <Icon name={tool?.private ? 'ri-lock-unlock-line' : 'ri-lock-unlock-line'} />
+                  </h4>
                   {tool?.description && (
                     <div>
                       <Icon name='ri-pen-nib-line' />
                       {tool.description}
                     </div>
                   )}
-                  {tool?.tags && (
+                  {tool?.license && (
+                    <div>
+                      <Icon name='ri-scales-3-line' />
+                      {tool.license}
+                    </div>
+                  )}
+                  {tool?.language && (
+                    <div>
+                      <Icon name='ri-code-s-slash-line' />
+                      {tool.language}
+                    </div>
+                  )}
+                  {tool?.topics && (
                     <TagGroup>
-                      {tool.tags.filter((tag) => !!tag).map((tag) => (
+                      {tool.topics.filter((topic) => !!topic).map((topic) => (
                         <Tag icon='ri-price-tag-3-line'>
-                          {tag}
+                          {topic}
                         </Tag>
                       ))}
                     </TagGroup>
                   )}
-
                 </CardDescription>
               </Card>
             ))
