@@ -1,6 +1,5 @@
 import {
   Card,
-  CardDescription,
   CardTitle,
   Checkbox,
   CheckboxGroup,
@@ -10,10 +9,8 @@ import {
   Row,
   Tab,
   Tabs,
-  Tag,
-  TagGroup,
 } from '@dataesr/react-dsfr';
-import { Octokit } from "@octokit/core";
+import { Octokit } from '@octokit/core';
 import { useEffect, useState } from 'react';
 
 import ToolCard from '../components/tool-card'
@@ -212,7 +209,7 @@ export default function Home() {
             <Tab label={`Catalogue (${filteredTools.length})`}>
               {
                 filteredTools.map((tool) => (
-                  <ToolCard tool={tool} />
+                  <ToolCard key={tool.name} tool={tool} />
                 ))
               }
             </Tab>

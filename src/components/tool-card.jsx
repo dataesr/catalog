@@ -1,14 +1,45 @@
 import { Card, CardDescription, Icon, Tag, TagGroup } from '@dataesr/react-dsfr';
+import { Octokit } from '@octokit/core';
+import { useEffect, useState } from 'react';
+
+const { VITE_GIT_PAT } = import.meta.env;
 
 const formatDate = (date) => {
   return date.slice(0, 10).split("-").reverse().join("/");
-}
+};
 
-export default function ToolCard({ tool }) {
+const getNameFromLogin = (login) => {
+  const logins = {
+    'annelhote': 'Anne',
+    'ericjeangirard': 'Eric',
+    'folland87': 'Frédéric',
+    'hfsllt': 'Hafsa',
+    'jerem1508': 'Jérémy',
+    'juliaGrandhay': 'Julia',
+    'miarkt': 'Mialy',
+    'Mihoub2': 'Mihoub',
+    'toutestprismemeca': 'Zoé',
+    'yaca29': 'Yann',
+  };
+  return logins?.[login] ?? login;
+};
+
+export default function ToolCard({ key, tool }) {
+  const [contributors, setContributors] = useState([]);
+
+  useEffect(() => {
+    async function fetchAuthors() {
+      const octokit = VITE_GIT_PAT ? new Octokit({ auth: VITE_GIT_PAT }) : new Octokit();
+      const response = await octokit.request(`GET /repos/{org}/{repo}/contributors`, { org: 'dataesr', repo: tool.name });
+      setContributors(response?.data ?? []);
+    }
+    fetchAuthors();
+  }, []);
+
   return (
     <Card
       href={tool?.html_url}
-      key={tool.name}
+      key={key}
     >
       <CardDescription>
         <div>
@@ -54,6 +85,15 @@ export default function ToolCard({ tool }) {
             <Icon name='ri-history-line' />
             Mis à jour le {formatDate(tool.updated_at)}
           </div>
+        )}
+        {contributors && (
+          <TagGroup>
+            {contributors.map((contributor) => (
+              <Tag icon='ri-pencil-line'>
+                {getNameFromLogin(contributor.login)}
+              </Tag>
+            ))}
+          </TagGroup>
         )}
       </CardDescription>
     </Card>
