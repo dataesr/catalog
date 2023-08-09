@@ -4,6 +4,28 @@ import { useEffect, useState } from 'react';
 
 const { VITE_GIT_PAT } = import.meta.env;
 
+const getColorByStatus = (status) => {
+  switch (status) {
+    case 'ok':
+      return 'green';
+    case 'ko':
+      return 'red';
+    default:
+      return 'gray';
+  }
+};
+
+const getIconByStatus = (status) => {
+  switch (status) {
+    case 'ok':
+      return 'ri-check-line';
+    case 'ko':
+      return 'ri-close-line';
+    default:
+      return 'ri-question-mark';
+  }
+};
+
 const formatDate = (date) => {
   return date.slice(0, 10).split("-").reverse().join("/");
 };
@@ -26,6 +48,7 @@ const getNameFromLogin = (login) => {
 
 export default function ToolCard({ key, tool }) {
   const [contributors, setContributors] = useState([]);
+  const [status, setStatus] = useState('undecided');
 
   useEffect(() => {
     async function fetchAuthors() {
@@ -34,6 +57,20 @@ export default function ToolCard({ key, tool }) {
       setContributors(response?.data ?? []);
     }
     fetchAuthors();
+  }, []);
+
+  useEffect(() => {
+    async function checkStatus(url) {
+      if (url) {
+        try {
+          const result = await fetch(url);
+          setStatus(result.ok ? 'ok' : 'ko')
+        } catch (err) {
+          setStatus('ko');
+        }
+      }
+    }
+    checkStatus(tool?.homepage);
   }, []);
 
   return (
@@ -46,6 +83,9 @@ export default function ToolCard({ key, tool }) {
           {tool.name}
           {' '}
           <Icon name={tool?.private ? 'ri-lock-line' : 'ri-lock-unlock-line'} />
+          {tool?.homepage && (
+            <Icon name={getIconByStatus(status)} color={getColorByStatus(status)} className='float-right' />
+          )}
         </div>
         {tool?.description && (
           <div>
@@ -89,7 +129,7 @@ export default function ToolCard({ key, tool }) {
         {contributors && (
           <TagGroup>
             {contributors.map((contributor) => (
-              <Tag icon='ri-pencil-line'>
+              <Tag icon='ri-pencil-line' key={contributor.login}>
                 {getNameFromLogin(contributor.login)}
               </Tag>
             ))}
