@@ -17,6 +17,7 @@ import { Octokit } from "@octokit/core";
 import { useEffect, useState } from 'react';
 
 import servicesData from '../data/services.json';
+import metaData from '../data/meta.json';
 
 const { VITE_GIT_PAT } = import.meta.env;
 
@@ -54,6 +55,10 @@ const checkStatus = async (url, urlOptions) => {
   } catch (err) {
     return { ok: false, status: err.message };
   }
+}
+
+const formatDate = (date) => {
+  return date.slice(0, 10).split("-").reverse().join("/");
 }
 
 const languages = [
@@ -135,16 +140,18 @@ export default function Home() {
   useEffect(() => {
     async function fetchRepositories({ page, allTools }) {
       const octokit = VITE_GIT_PAT ? new Octokit({ auth: VITE_GIT_PAT }) : new Octokit();
-      const repositories = await octokit.request(`GET /orgs/{org}/repos?sort=updated&page=${page}`, { org: 'dataesr' });
-      const toolsTmp = repositories.data;
+      const repositories = await octokit.request(`GET /orgs/{org}/repos?sort=updated_at&page=${page}`, { org: 'dataesr' });
+      const toolsTmp = repositories.data.map((item) => metaData?.[item.name] ? { ...item, ...metaData[item.name] } : item);
       if (toolsTmp.length === GITHUB_PER_PAGE) {
         fetchRepositories({ page: page + 1, allTools: [...allTools, ...toolsTmp] });
       } else {
-        setTools([...allTools, ...toolsTmp]);
-        setFilteredTools([...allTools, ...toolsTmp]);
+        const allToolsTmp = [...allTools, ...toolsTmp];
+        console.log(allToolsTmp.map((item) => item.authors));
+        setTools(allToolsTmp);
+        setFilteredTools(allToolsTmp);
       }
     }
-    fetchRepositories({ page: 1, allTools: tools });
+    fetchRepositories({ page: 1, allTools: [] });
   }, []);
 
   useEffect(() => {
@@ -245,6 +252,18 @@ export default function Home() {
                             </Tag>
                           ))}
                         </TagGroup>
+                      )}
+                      {tool?.contact && (
+                        <div>
+                          <Icon name='ri-mail-line' />
+                          {tool.contact}
+                        </div>
+                      )}
+                      {tool?.updated_at && (
+                        <div>
+                          <Icon name='ri-history-line' />
+                          Mis à jour le {formatDate(tool.updated_at)}
+                        </div>
                       )}
                     </CardDescription>
                   </Card>
