@@ -56,6 +56,21 @@ const checkStatus = async (url, urlOptions) => {
   }
 }
 
+const languages = [
+  { key: 'JavaScript', label: 'JavaScript' },
+  { key: 'Python', label: 'Python' },
+  { key: 'Dockerfile', label: 'Dockerfile' },
+  { key: 'Shell', label: 'Shell' },
+  { key: 'Jupyter Notebook', label: 'Jupyter Notebook' },
+  { key: 'SAS', label: 'SAS' },
+  { key: 'Jsonnet', label: 'Jsonnet' },
+  { key: 'R', label: 'R' },
+  { key: 'HTML', label: 'HTML' },
+  { key: 'Java', label: 'Java' },
+  { key: 'Vue', label: 'Vue' },
+  { key: 'none', label: 'Aucune' },
+];
+
 const licenses = [
   { key: 'mit', label: 'MIT License' },
   { key: 'gpl-2.0', label: 'GNU General Public License v2.0' },
@@ -70,10 +85,20 @@ const visibility = [
 
 export default function Home() {
   const [filteredTools, setFilteredTools] = useState([]);
+  const [selectedLanguages, setSelectedLanguages] = useState(languages.map((item) => item.key));
   const [selectedLicenses, setSelectedLicenses] = useState(licenses.map((item) => item.key));
   const [selectedVisibility, setSelectedVisibility] = useState(visibility.map((item) => item.key));
   const [services, setServices] = useState(servicesData);
   const [tools, setTools] = useState([]);
+
+  const onLanguagesChange = (itemKey) => {
+    if (selectedLanguages.includes(itemKey)) {
+      const selectedLanguagesCopy = [...selectedLanguages].filter((item) => item !== itemKey);
+      setSelectedLanguages(selectedLanguagesCopy);
+    } else {
+      setSelectedLanguages([...selectedLanguages, itemKey])
+    }
+  };
 
   const onLicensesChange = (itemKey) => {
     if (selectedLicenses.includes(itemKey)) {
@@ -124,10 +149,11 @@ export default function Home() {
 
   useEffect(() => {
     setFilteredTools(tools.filter((item) =>
-      selectedLicenses.includes(item?.license?.key ?? 'none')
+      selectedLanguages.includes(item?.language ?? 'none')
+      && selectedLicenses.includes(item?.license?.key ?? 'none')
       && selectedVisibility.includes(item?.private ? 'private' : 'public')
     ));
-  }, [selectedLicenses, selectedVisibility]);
+  }, [selectedLanguages, selectedLicenses, selectedVisibility]);
 
   return (
     <Container className="fr-my-15w">
@@ -137,7 +163,6 @@ export default function Home() {
             Filtres
           </h2>
           <CheckboxGroup
-            isInline
             legend="Visibilité"
           >
             {
@@ -166,16 +191,23 @@ export default function Home() {
             }
           </CheckboxGroup>
           <CheckboxGroup
-            isInline
             legend="Langage"
           >
-            <Checkbox label="JavaScript" checked />
-            <Checkbox label="Python" checked />
+            {
+              languages.map((item) => (
+                <Checkbox
+                  checked={selectedLanguages.includes(item.key)}
+                  key={item.key}
+                  label={item.label}
+                  onChange={() => onLanguagesChange(item.key)}
+                />
+              ))
+            }
           </CheckboxGroup>
         </Col>
         <Col n="10">
           <Tabs>
-            <Tab label="Catalogue">
+            <Tab label={`Catalogue (${filteredTools.length})`}>
               {
                 filteredTools.map((tool) => (
                   <Card
