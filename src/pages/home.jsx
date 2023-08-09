@@ -2,6 +2,8 @@ import {
   Card,
   CardDescription,
   CardTitle,
+  Checkbox,
+  CheckboxGroup,
   Col,
   Container,
   Icon,
@@ -54,9 +56,42 @@ const checkStatus = async (url, urlOptions) => {
   }
 }
 
+const licenses = [
+  { key: 'mit', label: 'MIT License' },
+  { key: 'gpl-2.0', label: 'GNU General Public License v2.0' },
+  { key: 'gpl-3.0', label: 'GNU General Public License v3.0' },
+  { key: 'none', label: 'Aucune' },
+];
+
+const visibility = [
+  { key: 'public', label: 'Public' },
+  { key: 'private', label: 'Privé' },
+];
+
 export default function Home() {
+  const [filteredTools, setFilteredTools] = useState([]);
+  const [selectedLicenses, setSelectedLicenses] = useState(licenses.map((item) => item.key));
+  const [selectedVisibility, setSelectedVisibility] = useState(visibility.map((item) => item.key));
   const [services, setServices] = useState(servicesData);
   const [tools, setTools] = useState([]);
+
+  const onLicensesChange = (itemKey) => {
+    if (selectedLicenses.includes(itemKey)) {
+      const selectedLicensesCopy = [...selectedLicenses].filter((item) => item !== itemKey);
+      setSelectedLicenses(selectedLicensesCopy);
+    } else {
+      setSelectedLicenses([...selectedLicenses, itemKey])
+    }
+  };
+
+  const onVisibilityChange = (itemKey) => {
+    if (selectedVisibility.includes(itemKey)) {
+      const selectedVisibilityCopy = [...selectedVisibility].filter((item) => item !== itemKey);
+      setSelectedVisibility(selectedVisibilityCopy);
+    } else {
+      setSelectedVisibility([...selectedVisibility, itemKey])
+    }
+  };
 
   useEffect(() => {
     async function fetchData() {
@@ -76,97 +111,143 @@ export default function Home() {
     async function fetchRepositories({ page, allTools }) {
       const octokit = VITE_GIT_PAT ? new Octokit({ auth: VITE_GIT_PAT }) : new Octokit();
       const repositories = await octokit.request(`GET /orgs/{org}/repos?sort=updated&page=${page}`, { org: 'dataesr' });
-      const toolsTmp = repositories.data.map((tool) => {
-        return {
-          ...tool,
-          label: tool?.name,
-          license: tool?.license?.name,
-          url: tool?.homepage,
-        };
-      });
+      const toolsTmp = repositories.data;
       if (toolsTmp.length === GITHUB_PER_PAGE) {
         fetchRepositories({ page: page + 1, allTools: [...allTools, ...toolsTmp] });
       } else {
         setTools([...allTools, ...toolsTmp]);
+        setFilteredTools([...allTools, ...toolsTmp]);
       }
     }
     fetchRepositories({ page: 1, allTools: tools });
   }, []);
 
+  useEffect(() => {
+    setFilteredTools(tools.filter((item) =>
+      selectedLicenses.includes(item?.license?.key ?? 'none')
+      && selectedVisibility.includes(item?.private ? 'private' : 'public')
+    ));
+  }, [selectedLicenses, selectedVisibility]);
+
   return (
     <Container className="fr-my-15w">
-      <Tabs>
-        <Tab label="Catalogue">
-          {
-            tools.map((tool) => (
-              <Card
-                href={tool?.url}
-              >
-                <CardDescription>
-                  <h4>
-                    {tool.label}
-                    {' '}
-                    <Icon name={tool?.private ? 'ri-lock-unlock-line' : 'ri-lock-unlock-line'} />
-                  </h4>
-                  {tool?.description && (
-                    <div>
-                      <Icon name='ri-pen-nib-line' />
-                      {tool.description}
-                    </div>
-                  )}
-                  {tool?.license && (
-                    <div>
-                      <Icon name='ri-scales-3-line' />
-                      {tool.license}
-                    </div>
-                  )}
-                  {tool?.language && (
-                    <div>
-                      <Icon name='ri-code-s-slash-line' />
-                      {tool.language}
-                    </div>
-                  )}
-                  {tool?.topics && (
-                    <TagGroup>
-                      {tool.topics.filter((topic) => !!topic).map((topic) => (
-                        <Tag icon='ri-price-tag-3-line'>
-                          {topic}
-                        </Tag>
-                      ))}
-                    </TagGroup>
-                  )}
-                </CardDescription>
-              </Card>
-            ))
-          }
-        </Tab>
-        <Tab label="Disponibilité">
-          <Row>
+      <Row>
+        <Col n="2">
+          <h2>
+            Filtres
+          </h2>
+          <CheckboxGroup
+            isInline
+            legend="Visibilité"
+          >
             {
-              services.map((service) => (
-                <Col n="6">
-                  <Card
-                    href={service.url}
-                    key={service.id}
-                    onClick={() => { }}>
-                    <CardTitle>
-                      <div>
-                        {service.label}
-                      </div>
-                      {service.ok === 'ko' && (
-                        <div >
-                          {service.status}
-                        </div>
-                      )}
-                      <Icon name={getIconByStatus(service.ok)} color={getColorByStatus(service.ok)} />
-                    </CardTitle>
-                  </Card>
-                </Col>
+              visibility.map((item) => (
+                <Checkbox
+                  checked={selectedVisibility.includes(item.key)}
+                  key={item.key}
+                  label={item.label}
+                  onChange={() => onVisibilityChange(item.key)}
+                />
               ))
             }
-          </Row>
-        </Tab>
-      </Tabs>
+          </CheckboxGroup>
+          <CheckboxGroup
+            legend="Licences"
+          >
+            {
+              licenses.map((item) => (
+                <Checkbox
+                  checked={selectedLicenses.includes(item.key)}
+                  key={item.key}
+                  label={item.label}
+                  onChange={() => onLicensesChange(item.key)}
+                />
+              ))
+            }
+          </CheckboxGroup>
+          <CheckboxGroup
+            isInline
+            legend="Langage"
+          >
+            <Checkbox label="JavaScript" checked />
+            <Checkbox label="Python" checked />
+          </CheckboxGroup>
+        </Col>
+        <Col n="10">
+          <Tabs>
+            <Tab label="Catalogue">
+              {
+                filteredTools.map((tool) => (
+                  <Card
+                    href={tool?.html_url}
+                  >
+                    <CardDescription>
+                      <div>
+                        {tool.name}
+                        {' '}
+                        <Icon name={tool?.private ? 'ri-lock-line' : 'ri-lock-unlock-line'} />
+                      </div>
+                      {tool?.description && (
+                        <div>
+                          <Icon name='ri-pen-nib-line' />
+                          {tool.description}
+                        </div>
+                      )}
+                      {tool?.license?.name && (
+                        <div>
+                          <Icon name='ri-scales-3-line' />
+                          {tool.license.name}
+                        </div>
+                      )}
+                      {tool?.language && (
+                        <div>
+                          <Icon name='ri-code-s-slash-line' />
+                          {tool.language}
+                        </div>
+                      )}
+                      {tool?.topics && (
+                        <TagGroup>
+                          {tool.topics.filter((topic) => !!topic).map((topic) => (
+                            <Tag icon='ri-price-tag-3-line'>
+                              {topic}
+                            </Tag>
+                          ))}
+                        </TagGroup>
+                      )}
+                    </CardDescription>
+                  </Card>
+                ))
+              }
+            </Tab>
+            <Tab label="Disponibilité">
+              <Row>
+                {
+                  services.map((service) => (
+                    <Col n="6">
+                      <Card
+                        href={service.url}
+                        key={service.id}
+                        onClick={() => { }}>
+                        <CardTitle>
+                          <div>
+                            {service.label}
+                          </div>
+                          {service.ok === 'ko' && (
+                            <div >
+                              {service.status}
+                            </div>
+                          )}
+                          <Icon name={getIconByStatus(service.ok)} color={getColorByStatus(service.ok)} />
+                        </CardTitle>
+                      </Card>
+                    </Col>
+                  ))
+                }
+              </Row>
+            </Tab>
+          </Tabs>
+        </Col>
+      </Row>
     </Container>
   );
 }
