@@ -1,59 +1,20 @@
 import {
-  Card,
-  CardTitle,
   Checkbox,
   CheckboxGroup,
   Col,
   Container,
-  Icon,
   Row,
-  Tab,
-  Tabs,
 } from '@dataesr/react-dsfr';
 import { Octokit } from '@octokit/core';
 import { useEffect, useState } from 'react';
 
 import ToolCard from '../components/tool-card'
-import servicesData from '../data/services.json';
 import metaData from '../data/meta.json';
 
 const { VITE_GIT_PAT } = import.meta.env;
 
 // 5 minutes
 const GITHUB_PER_PAGE = 30;
-const REFRESH_INTERVAL = 300000;
-
-const getColorByStatus = (status) => {
-  switch (status) {
-    case 'ok':
-      return 'green';
-    case 'ko':
-      return 'red';
-    default:
-      return 'gray';
-  }
-};
-
-const getIconByStatus = (status) => {
-  switch (status) {
-    case 'ok':
-      return 'ri-check-line';
-    case 'ko':
-      return 'ri-close-line';
-    default:
-      return 'ri-question-mark';
-  }
-};
-
-const checkStatus = async (url, urlOptions) => {
-  try {
-    const options = urlOptions ?? {};
-    const result = await fetch(url, options);
-    return { ok: result.ok, status: result.status };
-  } catch (err) {
-    return { ok: false, status: err.message };
-  }
-}
 
 const languages = [
   { key: 'JavaScript', label: 'JavaScript' },
@@ -87,7 +48,6 @@ export default function Home() {
   const [selectedLanguages, setSelectedLanguages] = useState(languages.map((item) => item.key));
   const [selectedLicenses, setSelectedLicenses] = useState(licenses.map((item) => item.key));
   const [selectedVisibility, setSelectedVisibility] = useState(visibility.map((item) => item.key));
-  const [services, setServices] = useState(servicesData);
   const [tools, setTools] = useState([]);
 
   const onLanguagesChange = (itemKey) => {
@@ -116,20 +76,6 @@ export default function Home() {
       setSelectedVisibility([...selectedVisibility, itemKey])
     }
   };
-
-  useEffect(() => {
-    async function fetchData() {
-      const servicesCopy = [...services];
-      const responses = await Promise.all(servicesCopy.map((service) => checkStatus(service.url, service?.urlOptions)));
-      responses.forEach((response, index) => {
-        servicesCopy[index].ok = response.ok ? 'ok' : 'ko';
-        servicesCopy[index].status = response.status;
-      })
-      setServices(servicesCopy);
-    }
-    fetchData();
-    setInterval(fetchData, REFRESH_INTERVAL);
-  }, [])
 
   useEffect(() => {
     async function fetchRepositories({ page, allTools }) {
@@ -161,6 +107,11 @@ export default function Home() {
           <h2>
             Filtres
           </h2>
+          <span>
+            <i>
+              {`${filteredTools.length}/${tools.length} projets`}
+            </i>
+          </span>
           <CheckboxGroup
             legend="Visibilité"
           >
@@ -205,41 +156,13 @@ export default function Home() {
           </CheckboxGroup>
         </Col>
         <Col n="10">
-          <Tabs>
-            <Tab label={`Catalogue (${filteredTools.length})`}>
-              {
-                filteredTools.map((tool) => (
-                  <ToolCard key={tool.name} tool={tool} />
-                ))
-              }
-            </Tab>
-            <Tab label="Disponibilité">
-              <Row>
-                {
-                  services.map((service) => (
-                    <Col n="6">
-                      <Card
-                        href={service.url}
-                        key={service.id}
-                        onClick={() => { }}>
-                        <CardTitle>
-                          <div>
-                            {service.label}
-                          </div>
-                          {service.ok === 'ko' && (
-                            <div >
-                              {service.status}
-                            </div>
-                          )}
-                          <Icon name={getIconByStatus(service.ok)} color={getColorByStatus(service.ok)} />
-                        </CardTitle>
-                      </Card>
-                    </Col>
-                  ))
-                }
-              </Row>
-            </Tab>
-          </Tabs>
+          <div>
+            {
+              filteredTools.map((tool) => (
+                <ToolCard key={tool.name} tool={tool} />
+              ))
+            }
+          </div>
         </Col>
       </Row>
     </Container>
