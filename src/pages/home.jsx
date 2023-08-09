@@ -8,7 +8,8 @@ import {
 import { Octokit } from '@octokit/core';
 import { useEffect, useState } from 'react';
 
-import ToolCard from '../components/tool-card'
+import SelectedTool from '../components/selected-tool';
+import ToolCard from '../components/tool-card';
 import metaData from '../data/meta.json';
 
 const { VITE_GIT_PAT } = import.meta.env;
@@ -47,6 +48,7 @@ export default function Home() {
   const [filteredTools, setFilteredTools] = useState([]);
   const [selectedLanguages, setSelectedLanguages] = useState(languages.map((item) => item.key));
   const [selectedLicenses, setSelectedLicenses] = useState(licenses.map((item) => item.key));
+  const [selectedTool, setSelectedTool] = useState();
   const [selectedVisibility, setSelectedVisibility] = useState(visibility.map((item) => item.key));
   const [tools, setTools] = useState([]);
 
@@ -103,7 +105,7 @@ export default function Home() {
   return (
     <Container className="fr-my-15w">
       <Row>
-        <Col n="2">
+        <Col n="3">
           <h2>
             Filtres
           </h2>
@@ -155,15 +157,22 @@ export default function Home() {
             }
           </CheckboxGroup>
         </Col>
-        <Col n="10">
-          <div>
-            {
-              filteredTools.map((tool) => (
-                <ToolCard key={tool.name} tool={tool} />
-              ))
-            }
-          </div>
-        </Col>
+        {(filteredTools.length > 0) && (
+          <Col n="5">
+            <div>
+              {
+                filteredTools.map((tool) => (
+                  <ToolCard setSelectedTool={setSelectedTool} tool={tool} />
+                ))
+              }
+            </div>
+          </Col>
+        )}
+        {selectedTool && (
+          <Col n="4">
+            <SelectedTool tool={selectedTool} />
+          </Col>
+        )}
       </Row>
     </Container>
   );
