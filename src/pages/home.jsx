@@ -16,6 +16,7 @@ import {
 import { Octokit } from "@octokit/core";
 import { useEffect, useState } from 'react';
 
+import ToolCard from '../components/tool-card'
 import servicesData from '../data/services.json';
 import metaData from '../data/meta.json';
 
@@ -55,10 +56,6 @@ const checkStatus = async (url, urlOptions) => {
   } catch (err) {
     return { ok: false, status: err.message };
   }
-}
-
-const formatDate = (date) => {
-  return date.slice(0, 10).split("-").reverse().join("/");
 }
 
 const languages = [
@@ -145,10 +142,8 @@ export default function Home() {
       if (toolsTmp.length === GITHUB_PER_PAGE) {
         fetchRepositories({ page: page + 1, allTools: [...allTools, ...toolsTmp] });
       } else {
-        const allToolsTmp = [...allTools, ...toolsTmp];
-        console.log(allToolsTmp.map((item) => item.authors));
-        setTools(allToolsTmp);
-        setFilteredTools(allToolsTmp);
+        setTools([...allTools, ...toolsTmp]);
+        setFilteredTools([...allTools, ...toolsTmp]);
       }
     }
     fetchRepositories({ page: 1, allTools: [] });
@@ -217,56 +212,7 @@ export default function Home() {
             <Tab label={`Catalogue (${filteredTools.length})`}>
               {
                 filteredTools.map((tool) => (
-                  <Card
-                    href={tool?.html_url}
-                  >
-                    <CardDescription>
-                      <div>
-                        {tool.name}
-                        {' '}
-                        <Icon name={tool?.private ? 'ri-lock-line' : 'ri-lock-unlock-line'} />
-                      </div>
-                      {tool?.description && (
-                        <div>
-                          <Icon name='ri-pen-nib-line' />
-                          {tool.description}
-                        </div>
-                      )}
-                      {tool?.license?.name && (
-                        <div>
-                          <Icon name='ri-scales-3-line' />
-                          {tool.license.name}
-                        </div>
-                      )}
-                      {tool?.language && (
-                        <div>
-                          <Icon name='ri-code-s-slash-line' />
-                          {tool.language}
-                        </div>
-                      )}
-                      {tool?.topics && (
-                        <TagGroup>
-                          {tool.topics.filter((topic) => !!topic).map((topic) => (
-                            <Tag icon='ri-price-tag-3-line'>
-                              {topic}
-                            </Tag>
-                          ))}
-                        </TagGroup>
-                      )}
-                      {tool?.contact && (
-                        <div>
-                          <Icon name='ri-mail-line' />
-                          {tool.contact}
-                        </div>
-                      )}
-                      {tool?.updated_at && (
-                        <div>
-                          <Icon name='ri-history-line' />
-                          Mis à jour le {formatDate(tool.updated_at)}
-                        </div>
-                      )}
-                    </CardDescription>
-                  </Card>
+                  <ToolCard tool={tool} />
                 ))
               }
             </Tab>
