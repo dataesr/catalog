@@ -1,4 +1,4 @@
-import { Icon, Tag, TagGroup } from '@dataesr/react-dsfr';
+import { Icon, Link, Tag, TagGroup } from '@dataesr/react-dsfr';
 import { Octokit } from '@octokit/core';
 import { useEffect, useState } from 'react';
 
@@ -36,6 +36,7 @@ const getNameFromLogin = (login) => {
     'juliaGrandhay': 'Julia',
     'miarkt': 'Mialy',
     'Mihoub2': 'Mihoub',
+    'poplingue': 'Pauline',
     'toutestprismemeca': 'Zoé',
     'yaca29': 'Yann',
   };
@@ -74,25 +75,30 @@ export default function SelectedTool({ tool }) {
   }, [tool]);
 
   return (
-    <div>
+    <div className='fr-ml-2w'>
       {tool?.homepage && (
         <>
-          <span>
+          <span className='fr-mr-1v'>
             Disponibilité
           </span>
           <Icon name={getIconByStatus(status)} color={getColorByStatus(status)} className='float-right' />
+          <div>
+            <Link href={tool.homepage} target='_blank'>
+              {tool.homepage}
+            </Link>
+          </div>
         </>
       )}
       {tool?.updated_at && (
         <>
-          <hr className="fr-my-2w fr-mx-1v" />
+          <hr className='fr-my-2w fr-mx-1v' />
           <Icon name='ri-history-line' />
           Mis à jour le {formatDate(tool.updated_at)}
         </>
       )}
       {contributors && (
         <>
-          <hr className="fr-my-2w fr-mx-1v" />
+          <hr className='fr-my-2w fr-mx-1v' />
           <span>
             Contributeurs
           </span>
@@ -107,7 +113,7 @@ export default function SelectedTool({ tool }) {
       )}
       {(tool?.topics?.length > 0) && (
         <>
-          <hr className="fr-my-2w fr-mx-1v" />
+          <hr className='fr-my-2w fr-mx-1v' />
           <span>
             Thèmes
           </span>
@@ -122,7 +128,7 @@ export default function SelectedTool({ tool }) {
       )}
       {tool?.contact && (
         <>
-          <hr className="fr-my-2w fr-mx-1v" />
+          <hr className='fr-my-2w fr-mx-1v' />
           <span>
             Contact
           </span>
