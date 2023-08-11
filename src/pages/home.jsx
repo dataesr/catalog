@@ -81,7 +81,7 @@ export default function Home() {
 
   useEffect(() => {
     async function fetchRepositories({ page, allTools }) {
-      const metaDataPrivate = VITE_PRIVATE_METADATA ? await import(VITE_PRIVATE_METADATA) : {};
+      const metaDataPrivate = VITE_PRIVATE_METADATA ? await import(/* @vite-ignore */VITE_PRIVATE_METADATA) : {};
       const octokit = VITE_GIT_PAT ? new Octokit({ auth: VITE_GIT_PAT }) : new Octokit();
       const repositories = await octokit.request(`GET /orgs/{org}/repos?sort=updated_at&page=${page}`, { org: 'dataesr' });
       const toolsTmp = repositories.data.map((item) => ({ ...item, ...metaData?.[item.name], ...metaDataPrivate?.[item.name] }));
