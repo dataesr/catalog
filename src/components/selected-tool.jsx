@@ -1,30 +1,12 @@
-import { Icon, Link, Tag, TagGroup } from '@dataesr/react-dsfr';
+import { Icon, Tag, TagGroup } from '@dataesr/react-dsfr';
 import { Octokit } from '@octokit/core';
 import { useEffect, useState } from 'react';
 
+import CheckAvailability from './check-availibility';
+
 const { VITE_GIT_PAT } = import.meta.env;
 
-const getColorByStatus = (status) => {
-  switch (status) {
-    case 'ok':
-      return 'green';
-    case 'ko':
-      return 'red';
-    default:
-      return 'gray';
-  }
-};
 
-const getIconByStatus = (status) => {
-  switch (status) {
-    case 'ok':
-      return 'ri-check-line';
-    case 'ko':
-      return 'ri-close-line';
-    default:
-      return 'ri-question-mark';
-  }
-};
 
 const getNameFromLogin = (login) => {
   const logins = {
@@ -49,7 +31,6 @@ const formatDate = (date) => {
 
 export default function SelectedTool({ tool }) {
   const [contributors, setContributors] = useState([]);
-  const [status, setStatus] = useState('undecided');
 
   useEffect(() => {
     async function fetchContributors() {
@@ -60,20 +41,6 @@ export default function SelectedTool({ tool }) {
     fetchContributors();
   }, [tool]);
 
-  useEffect(() => {
-    async function checkStatus(url) {
-      if (url) {
-        try {
-          const result = await fetch(url);
-          setStatus(result.ok ? 'ok' : 'ko')
-        } catch (err) {
-          setStatus('ko');
-        }
-      }
-    }
-    checkStatus(tool?.homepage);
-  }, [tool]);
-
   return (
     <div className='fr-ml-2w'>
       {tool?.homepage && (
@@ -81,12 +48,16 @@ export default function SelectedTool({ tool }) {
           <span className='fr-mr-1v'>
             Disponibilité
           </span>
-          <Icon name={getIconByStatus(status)} color={getColorByStatus(status)} className='float-right' />
-          <div>
-            <Link href={tool.homepage} target='_blank'>
-              {tool.homepage}
-            </Link>
-          </div>
+          <CheckAvailability url={tool?.homepage} />
+        </>
+      )}
+      {tool?.staging && (
+        <>
+          <hr className='fr-my-2w fr-mx-1v' />
+          <span className='fr-mr-1v'>
+            Staging
+          </span>
+          <CheckAvailability url={tool?.staging} />
         </>
       )}
       {tool?.updated_at && (

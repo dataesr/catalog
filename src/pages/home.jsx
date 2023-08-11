@@ -12,7 +12,7 @@ import SelectedTool from '../components/selected-tool';
 import ToolCard from '../components/tool-card';
 import metaData from '../data/meta.json';
 
-const { VITE_GIT_PAT } = import.meta.env;
+const { VITE_GIT_PAT, VITE_PRIVATE_METADATA } = import.meta.env;
 
 // 5 minutes
 const GITHUB_PER_PAGE = 30;
@@ -81,9 +81,10 @@ export default function Home() {
 
   useEffect(() => {
     async function fetchRepositories({ page, allTools }) {
+      const metaDataPrivate = VITE_PRIVATE_METADATA ? await import(VITE_PRIVATE_METADATA) : {};
       const octokit = VITE_GIT_PAT ? new Octokit({ auth: VITE_GIT_PAT }) : new Octokit();
       const repositories = await octokit.request(`GET /orgs/{org}/repos?sort=updated_at&page=${page}`, { org: 'dataesr' });
-      const toolsTmp = repositories.data.map((item) => metaData?.[item.name] ? { ...item, ...metaData[item.name] } : item);
+      const toolsTmp = repositories.data.map((item) => ({ ...item, ...metaData?.[item.name], ...metaDataPrivate?.[item.name] }));
       if (toolsTmp.length === GITHUB_PER_PAGE) {
         fetchRepositories({ page: page + 1, allTools: [...allTools, ...toolsTmp] });
       } else {
