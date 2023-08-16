@@ -9,6 +9,7 @@ import { Octokit } from '@octokit/core';
 import { useEffect, useState } from 'react';
 
 import SelectedTool from '../components/selected-tool';
+import { Spinner } from '../components/spinner';
 import ToolCard from '../components/tool-card';
 import metaData from '../data/meta.json';
 
@@ -158,8 +159,8 @@ export default function Home() {
             }
           </CheckboxGroup>
         </Col>
-        {(filteredTools.length > 0) && (
-          <Col n="5">
+        <Col n="5">
+          {(filteredTools.length > 0) ? (
             <div>
               {
                 filteredTools.map((tool) => (
@@ -167,8 +168,8 @@ export default function Home() {
                 ))
               }
             </div>
-          </Col>
-        )}
+          ) : <Spinner />}
+        </Col>
         {selectedTool && (
           <Col n="4">
             <SelectedTool tool={selectedTool} />
