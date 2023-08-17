@@ -15,43 +15,24 @@ import metaData from '../data/meta.json';
 
 const { VITE_GIT_PAT, VITE_PRIVATE_METADATA } = import.meta.env;
 
-// 5 minutes
+const FALLBACK_CHECKBOX_LABEL = 'Aucun';
 const GITHUB_PER_PAGE = 30;
 
-const languages = [
-  { key: 'JavaScript', label: 'JavaScript' },
-  { key: 'Python', label: 'Python' },
-  { key: 'Dockerfile', label: 'Dockerfile' },
-  { key: 'Shell', label: 'Shell' },
-  { key: 'Jupyter Notebook', label: 'Jupyter Notebook' },
-  { key: 'SAS', label: 'SAS' },
-  { key: 'Jsonnet', label: 'Jsonnet' },
-  { key: 'R', label: 'R' },
-  { key: 'HTML', label: 'HTML' },
-  { key: 'Java', label: 'Java' },
-  { key: 'Vue', label: 'Vue' },
-  { key: 'none', label: 'Aucune' },
-];
-
-const licenses = [
-  { key: 'mit', label: 'MIT License' },
-  { key: 'gpl-2.0', label: 'GNU General Public License v2.0' },
-  { key: 'gpl-3.0', label: 'GNU General Public License v3.0' },
-  { key: 'none', label: 'Aucune' },
-];
-
-const visibility = [
-  { key: 'public', label: 'Public' },
-  { key: 'private', label: 'Privé' },
-];
+const normalize = (str) => str
+  .toLowerCase()
+  .normalize('NFD')
+  .replace(/[^a-zA-Z0-9]/g, '');
 
 export default function Home() {
   const [filteredTools, setFilteredTools] = useState([]);
-  const [selectedLanguages, setSelectedLanguages] = useState(languages.map((item) => item.key));
-  const [selectedLicenses, setSelectedLicenses] = useState(licenses.map((item) => item.key));
+  const [languages, setLanguages] = useState([]);
+  const [licenses, setLicenses] = useState([]);
+  const [selectedLanguages, setSelectedLanguages] = useState([]);
+  const [selectedLicenses, setSelectedLicenses] = useState([]);
   const [selectedTool, setSelectedTool] = useState();
-  const [selectedVisibility, setSelectedVisibility] = useState(visibility.map((item) => item.key));
+  const [selectedVisibility, setSelectedVisibility] = useState([]);
   const [tools, setTools] = useState([]);
+  const [visibility, setVisibility] = useState([]);
 
   const onLanguagesChange = (itemKey) => {
     if (selectedLanguages.includes(itemKey)) {
@@ -90,16 +71,39 @@ export default function Home() {
         fetchRepositories({ page: page + 1, allTools: [...allTools, ...toolsTmp] });
       } else {
         setTools([...allTools, ...toolsTmp]);
-        setFilteredTools([...allTools, ...toolsTmp]);
       }
     }
     fetchRepositories({ page: 1, allTools: [] });
   }, []);
 
   useEffect(() => {
+    const allLanguages = {};
+    const allLicenses = {};
+    const allVisibility = {
+      private: { key: 'private', label: 'Privé', count: 0 },
+      public: { key: 'public', label: 'Public', count: 0 },
+    };
+    tools.forEach((tool) => {
+      const language = tool?.language ?? FALLBACK_CHECKBOX_LABEL;
+      if (!allLanguages?.[normalize(language)]) allLanguages[normalize(language)] = { key: normalize(language), label: language, count: 0 };
+      allLanguages[normalize(language)].count += 1;
+      const license = tool?.license ? tool.license : { key: normalize(FALLBACK_CHECKBOX_LABEL), name: FALLBACK_CHECKBOX_LABEL };
+      if (!allLicenses?.[license.key]) allLicenses[license.key] = { key: license.key, label: license.name, count: 0 };
+      allLicenses[license.key].count += 1;
+      tool?.private ? allVisibility.private.count += 1 : allVisibility.public.count += 1;
+    });
+    setLanguages(Object.values(allLanguages).sort((a, b) => b.count - a.count));
+    setSelectedLanguages(Object.keys(allLanguages));
+    setLicenses(Object.values(allLicenses).sort((a, b) => b.count - a.count));
+    setSelectedLicenses(Object.keys(allLicenses));
+    setVisibility(Object.values(allVisibility).sort((a, b) => b.count - a.count));
+    setSelectedVisibility(Object.keys(allVisibility));
+  }, [tools]);
+
+  useEffect(() => {
     setFilteredTools(tools.filter((item) =>
-      selectedLanguages.includes(item?.language ?? 'none')
-      && selectedLicenses.includes(item?.license?.key ?? 'none')
+      selectedLanguages.includes(normalize(item?.language ?? normalize(FALLBACK_CHECKBOX_LABEL)))
+      && selectedLicenses.includes(item?.license?.key ?? normalize(FALLBACK_CHECKBOX_LABEL))
       && selectedVisibility.includes(item?.private ? 'private' : 'public')
     ));
   }, [selectedLanguages, selectedLicenses, selectedVisibility]);
@@ -116,48 +120,54 @@ export default function Home() {
               {`${filteredTools.length}/${tools.length} projets`}
             </i>
           </span>
-          <CheckboxGroup
-            legend="Visibilité"
-          >
-            {
-              visibility.map((item) => (
-                <Checkbox
-                  checked={selectedVisibility.includes(item.key)}
-                  key={item.key}
-                  label={item.label}
-                  onChange={() => onVisibilityChange(item.key)}
-                />
-              ))
-            }
-          </CheckboxGroup>
-          <CheckboxGroup
-            legend="Licences"
-          >
-            {
-              licenses.map((item) => (
-                <Checkbox
-                  checked={selectedLicenses.includes(item.key)}
-                  key={item.key}
-                  label={item.label}
-                  onChange={() => onLicensesChange(item.key)}
-                />
-              ))
-            }
-          </CheckboxGroup>
-          <CheckboxGroup
-            legend="Langage"
-          >
-            {
-              languages.map((item) => (
-                <Checkbox
-                  checked={selectedLanguages.includes(item.key)}
-                  key={item.key}
-                  label={item.label}
-                  onChange={() => onLanguagesChange(item.key)}
-                />
-              ))
-            }
-          </CheckboxGroup>
+          {(visibility.length > 0) && (
+            <CheckboxGroup
+              legend="Visibilité"
+            >
+              {
+                visibility.map((item) => (
+                  <Checkbox
+                    checked={selectedVisibility.includes(item.key)}
+                    key={item.key}
+                    label={`${item.label} (${item.count})`}
+                    onChange={() => onVisibilityChange(item.key)}
+                  />
+                ))
+              }
+            </CheckboxGroup>
+          )}
+          {(licenses.length > 0) && (
+            <CheckboxGroup
+              legend="Licences"
+            >
+              {
+                licenses.map((item) => (
+                  <Checkbox
+                    checked={selectedLicenses.includes(item.key)}
+                    key={item.key}
+                    label={`${item.label} (${item.count})`}
+                    onChange={() => onLicensesChange(item.key)}
+                  />
+                ))
+              }
+            </CheckboxGroup>
+          )}
+          {(languages.length > 0) && (
+            <CheckboxGroup
+              legend="Langage"
+            >
+              {
+                languages.map((item) => (
+                  <Checkbox
+                    checked={selectedLanguages.includes(item.key)}
+                    key={item.key}
+                    label={`${item.label} (${item.count})`}
+                    onChange={() => onLanguagesChange(item.key)}
+                  />
+                ))
+              }
+            </CheckboxGroup>
+          )}
         </Col>
         <Col n="5">
           {(filteredTools.length > 0) ? (

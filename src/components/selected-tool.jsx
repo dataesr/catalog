@@ -6,8 +6,6 @@ import CheckAvailability from './check-availibility';
 
 const { VITE_GIT_PAT } = import.meta.env;
 
-
-
 const getNameFromLogin = (login) => {
   const logins = {
     'annelhote': 'Anne',
@@ -108,7 +106,6 @@ export default function SelectedTool({ tool }) {
             {tool.contact}
           </div>
         </>
-
       )}
     </div>
   );
