@@ -1,6 +1,7 @@
+import { Container, SwitchTheme } from '@dataesr/react-dsfr';
 import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import { Container, SwitchTheme } from '@dataesr/react-dsfr';
+
 import Header from './Header';
 import Footer from './Footer';
 import ScrollToTop from './ScrollToTopButton';

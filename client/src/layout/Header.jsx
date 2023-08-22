@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import {
   Badge,
   Header as HeaderWrapper,
@@ -8,6 +7,7 @@ import {
   Tool,
   ToolItemGroup,
 } from '@dataesr/react-dsfr';
+import PropTypes from 'prop-types';
 
 const {
   VITE_APP_NAME,
