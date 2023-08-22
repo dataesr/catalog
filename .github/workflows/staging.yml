@@ -32,7 +32,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
-      - run: npm ci --slient && npm run build --mode=staging
+      - run: npm ci --silent && npm run build --mode=staging
 
       - name: 🐋 Build Docker image
         run: docker build -t ${{ github.repository }} .
