@@ -1,10 +1,7 @@
-FROM node:18-alpine AS build
+FROM node:18-alpine
 WORKDIR /app
 COPY package*.json ./
-COPY ./client/package*.json ./client/
-COPY ./server/package*.json ./server/
+COPY server ./server
 RUN npm ci --silent
-COPY . .
-COPY client/src/data/*.json ./client/src/data/*.json
-ARG MODE=production
-RUN npm run build-fullstack --mode=$MODE
+CMD ["npm", "run", "-w", "server", "start"]
+EXPOSE 3000
