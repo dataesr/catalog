@@ -24,7 +24,6 @@ jobs:
         id: tag
         run: echo "tag=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
 
-
       - name: 🔑 Login Docker
         run: docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
 
