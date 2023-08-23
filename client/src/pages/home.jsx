@@ -5,15 +5,11 @@ import {
   Container,
   Row,
 } from '@dataesr/react-dsfr';
-import { Octokit } from '@octokit/core';
 import { useEffect, useState } from 'react';
 
 import SelectedTool from '../components/selected-tool';
 import { Spinner } from '../components/spinner';
 import ToolCard from '../components/tool-card';
-import metaData from '../data/meta.json';
-
-const { VITE_GIT_PAT, VITE_PRIVATE_METADATA } = import.meta.env;
 
 const FALLBACK_CHECKBOX_LABEL = 'Aucun';
 const GITHUB_PER_PAGE = 30;
@@ -60,24 +56,32 @@ export default function Home() {
       setSelectedVisibility([...selectedVisibility, itemKey])
     }
   };
-
   useEffect(() => {
-    async function fetchRepositories({ page, allTools }) {
-      let metaDataPrivate = {};
-      try {
-        metaDataPrivate = VITE_PRIVATE_METADATA ? await import(/* @vite-ignore */VITE_PRIVATE_METADATA) : {};
-      } catch (error) {}
-      const octokit = VITE_GIT_PAT ? new Octokit({ auth: VITE_GIT_PAT }) : new Octokit();
-      const repositories = await octokit.request(`GET /orgs/{org}/repos?sort=updated_at&page=${page}`, { org: 'dataesr' });
-      const toolsTmp = repositories.data.map((item) => ({ ...item, ...metaData?.[item.name], ...metaDataPrivate?.[item.name] }));
-      if (toolsTmp.length === GITHUB_PER_PAGE) {
-        fetchRepositories({ page: page + 1, allTools: [...allTools, ...toolsTmp] });
+  const toolsTmp = [];
+
+  async function fetchRepositories({ page }) {
+    try {
+      let url = `http://localhost:3000/api/github?page=${page}`;
+      
+      const response = await fetch(url);
+      const data = await response.json();
+      const fetchedTools = data.tools || [];
+
+      toolsTmp.push(...fetchedTools);
+
+      if (fetchedTools.length === GITHUB_PER_PAGE) {
+        fetchRepositories({ page: page + 1 });
       } else {
-        setTools([...allTools, ...toolsTmp]);
+        setTools(toolsTmp);
       }
+    } catch (error) {
+      console.error('Erreur lors de la récupération des dépôts depuis le backend :', error);
     }
-    fetchRepositories({ page: 1, allTools: [] });
-  }, []);
+  }
+
+  fetchRepositories({ page: 1 });
+}, []);
+
 
   useEffect(() => {
     const allLanguages = {};

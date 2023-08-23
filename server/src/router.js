@@ -1,9 +1,9 @@
 import express from 'express';
 
-import helloRouter from './routes/hello';
+import Router from './routes/routes';
 
 const router = new express.Router();
 
-router.use(helloRouter);
+router.use(Router);
 
 export default router;
