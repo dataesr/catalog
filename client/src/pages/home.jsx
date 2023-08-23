@@ -61,7 +61,7 @@ export default function Home() {
 
   async function fetchRepositories({ page }) {
     try {
-      let url = `http://localhost:3000/api/github?page=${page}`;
+      let url = `/api/github?page=${page}`;
       
       const response = await fetch(url);
       const data = await response.json();
@@ -179,9 +179,9 @@ export default function Home() {
         <Col n="5">
           {(filteredTools.length > 0) ? (
             <div>
-              {
-                filteredTools.map((tool) => (
-                  <ToolCard setSelectedTool={setSelectedTool} tool={tool} />
+             {
+              filteredTools.map((tool) => (
+               <ToolCard key={tool.id} setSelectedTool={setSelectedTool} tool={tool} />
                 ))
               }
             </div>
