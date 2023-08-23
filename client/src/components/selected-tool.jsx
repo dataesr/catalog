@@ -1,10 +1,8 @@
 import { Icon, Tag, TagGroup } from '@dataesr/react-dsfr';
-import { Octokit } from '@octokit/core';
 import { useEffect, useState } from 'react';
 
 import CheckAvailability from './check-availibility';
 
-const { VITE_GIT_PAT } = import.meta.env;
 
 const getNameFromLogin = (login) => {
   const logins = {
@@ -30,11 +28,15 @@ const formatDate = (date) => {
 export default function SelectedTool({ tool }) {
   const [contributors, setContributors] = useState([]);
 
-  useEffect(() => {
+ useEffect(() => {
     async function fetchContributors() {
-      const octokit = VITE_GIT_PAT ? new Octokit({ auth: VITE_GIT_PAT }) : new Octokit();
-      const response = await octokit.request(`GET /repos/{org}/{repo}/contributors`, { org: 'dataesr', repo: tool.name });
-      setContributors(response?.data ?? []);
+      try {
+        const response = await fetch(`/api/contributors?org=dataesr&repo=${tool.name}`);
+        const contributors = await response.json();
+        setContributors(contributors);
+      } catch (error) {
+        console.error('Erreur pendant le fetch des contributeurs (front)', error);
+      }
     }
     fetchContributors();
   }, [tool]);
@@ -87,8 +89,8 @@ export default function SelectedTool({ tool }) {
             Thèmes
           </span>
           <TagGroup>
-            {tool.topics.filter((topic) => !!topic).map((topic) => (
-              <Tag icon='ri-price-tag-3-line'>
+            {tool.topics.filter((topic) => !!topic).map((topic, index) => (
+              <Tag icon='ri-price-tag-3-line' key={index}>
                 {topic}
               </Tag>
             ))}
