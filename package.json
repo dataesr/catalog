@@ -11,7 +11,6 @@
   "dependencies": {
     "@octokit/rest": "^20.0.1",
     "concurrently": "^8.0.1",
-    "node-fetch": "^3.3.2",
     "primereact": "^9.6.0",
     "react-tooltip": "^5.18.1"
   },

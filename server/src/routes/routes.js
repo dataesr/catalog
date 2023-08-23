@@ -24,13 +24,13 @@ router.route('/github/repos').get(async (req, res) => {
     res.json(repositories);
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error('Erreur lors de la récupération des dépôts GitHub :', error);
-    res.status(500).json({ error: 'Une erreur s\'est produite lors de la récupération des données depuis GitHub.' });
+    console.error('Error while fetching repos :', error);
+    res.status(500).json({ error: 'Error while fetching repos' });
   }
 });
 
 router.route('/github/contributors').get(async (req, res) => {
-  const { org, repo } = req.query;
+  const { repo } = req.query;
   const octokitOptions = {
     request: { fetch },
   };
@@ -42,16 +42,16 @@ router.route('/github/contributors').get(async (req, res) => {
   const octokit = new Octokit(octokitOptions);
 
   try {
-    const response = await octokit.request(`GET /repos/${org}/${repo}/contributors`, {
-      org,
+    const response = await octokit.request(`GET /repos/{org}/{repo}/contributors`, {
+      org: 'dataesr',
       repo,
     });
     const contributors = response.data;
     res.json(contributors);
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error('Erreur lors de la récupération des contributeurs:', error);
-    res.status(500).json({ error: 'Erreur lors de la récupération des contributeurs' });
+    console.error('Error while fetching contributors', error);
+    res.status(500).json({ error: 'Error while fetching contributors' });
   }
 });
 

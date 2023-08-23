@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 
 import CheckAvailability from './check-availibility';
 
-
 const getNameFromLogin = (login) => {
   const logins = {
     'annelhote': 'Anne',
@@ -28,28 +27,25 @@ const formatDate = (date) => {
 export default function SelectedTool({ tool }) {
   const [contributors, setContributors] = useState([]);
 
-useEffect(() => {
-  async function fetchContributors() {
-    try {
-      let url = `${import.meta.env.VITE_GITHUB_URL_CONTRIBUTORS.replace("/REPO/", `/${tool.name}/`)}`;
-      const response = await fetch(`${url}/?org=dataesr&repo=${tool.name}`);
-      const body = await response.json();
-      const contributorsArray = Object.keys(body).map(key => body[key]);
-      setContributors(contributorsArray);
-    } catch (error) {
-      console.error('Erreur pendant le fetch des contributeurs (front)', error);
+  useEffect(() => {
+    async function fetchContributors() {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_GITHUB_URL_CONTRIBUTORS.replace("/REPO/", `/${tool.name}/`)}repo=${tool.name}`);
+        const body = await response.json();
+        setContributors(Object.keys(body).map(key => body[key]));
+      } catch (error) {
+        console.error('Error while fetching contributors', error);
+      }
     }
-  }
-  fetchContributors();
-}, [tool]);
-
+    fetchContributors();
+  }, [tool]);
 
   return (
     <div className='fr-ml-2w'>
       {tool?.homepage && (
         <>
           <span className='fr-mr-1v'>
-            Disponibilité
+            Availability
           </span>
           <CheckAvailability url={tool?.homepage} />
         </>
@@ -67,14 +63,14 @@ useEffect(() => {
         <>
           <hr className='fr-my-2w fr-mx-1v' />
           <Icon name='ri-history-line' />
-          Mis à jour le {formatDate(tool.updated_at)}
+          Updated {formatDate(tool.updated_at)}
         </>
       )}
       {contributors && (
         <>
           <hr className='fr-my-2w fr-mx-1v' />
           <span>
-            Contributeurs
+            Contributors
           </span>
           <TagGroup>
             {contributors.map((contributor) => (
@@ -89,7 +85,7 @@ useEffect(() => {
         <>
           <hr className='fr-my-2w fr-mx-1v' />
           <span>
-            Thèmes
+            Topics
           </span>
           <TagGroup>
             {tool.topics.filter((topic) => !!topic).map((topic, index) => (

@@ -59,35 +59,32 @@ export default function Home() {
   };
 
   useEffect(() => {
-  const toolsTmp = [];
+    const toolsTmp = [];
 
-  async function fetchRepositories({ page }) {
-    try {
-      let url = `${import.meta.env.VITE_GITHUB_URL_REPOS}page=${page}`;
-      
-      const body = await fetch(url)
-      const response = await body.json()
-      const fetchedTools = response || [];
-
-      toolsTmp.push(...fetchedTools);
-      if (fetchedTools.length === GITHUB_PER_PAGE) {
-        fetchRepositories({ page: page + 1 });
-      } else {
-        setTools(toolsTmp); 
+    async function fetchRepositories({ page }) {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_GITHUB_URL_REPOS}page=${page}`);
+        const body = await response.json();
+        const fetchedTools = body || [];
+        toolsTmp.push(...fetchedTools);
+        if (fetchedTools.length === GITHUB_PER_PAGE) {
+          fetchRepositories({ page: page + 1 });
+        } else {
+          setTools(toolsTmp);
+        }
+      } catch (error) {
+        console.error('Error while fetching repos : ', error);
       }
-    } catch (error) {
-      console.error('Erreur lors de la récupération des dépôts depuis le backend :', error);
     }
-  }
 
-  fetchRepositories({ page: 1 });
-}, []);
+    fetchRepositories({ page: 1 });
+  }, []);
 
   useEffect(() => {
     const allLanguages = {};
     const allLicenses = {};
     const allVisibility = {
-      private: { key: 'private', label: 'Privé', count: 0 },
+      private: { key: 'private', label: 'Private', count: 0 },
       public: { key: 'public', label: 'Public', count: 0 },
     };
     tools.forEach((tool) => {
@@ -120,16 +117,16 @@ export default function Home() {
       <Row>
         <Col n="3">
           <h2>
-            Filtres
+            Filters
           </h2>
           <span>
             <i>
-              {`${filteredTools.length}/${tools.length} projets`}
+              {`${filteredTools.length}/${tools.length} projects`}
             </i>
           </span>
           {(visibility.length > 0) && (
             <CheckboxGroup
-              legend="Visibilité"
+              legend="Visibility"
             >
               {
                 visibility.map((item) => (
@@ -145,7 +142,7 @@ export default function Home() {
           )}
           {(licenses.length > 0) && (
             <CheckboxGroup
-              legend="Licences"
+              legend="Licenses"
             >
               {
                 licenses.map((item) => (
@@ -161,7 +158,7 @@ export default function Home() {
           )}
           {(languages.length > 0) && (
             <CheckboxGroup
-              legend="Langage"
+              legend="Languages"
             >
               {
                 languages.map((item) => (
@@ -179,9 +176,9 @@ export default function Home() {
         <Col n="5">
           {(filteredTools.length > 0) ? (
             <div>
-             {
-              filteredTools.map((tool) => (
-               <ToolCard key={tool.id} setSelectedTool={setSelectedTool} tool={tool} />
+              {
+                filteredTools.map((tool) => (
+                  <ToolCard key={tool.id} setSelectedTool={setSelectedTool} tool={tool} />
                 ))
               }
             </div>
