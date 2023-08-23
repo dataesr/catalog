@@ -63,7 +63,7 @@ export default function Home() {
 
   async function fetchRepositories({ page }) {
     try {
-      let url = `${import.meta.env.VITE_GITHUB_URL_REPOS}?page=${page}`;
+      let url = `${import.meta.env.VITE_GITHUB_URL_REPOS}page=${page}`;
       
       const body = await fetch(url)
       const response = await body.json()
