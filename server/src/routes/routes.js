@@ -14,9 +14,7 @@ router.route('/github').get(async (req, res) => {
   if (process.env.VITE_GIT_PAT) {
     octokitOptions.auth = process.env.VITE_GIT_PAT;
   }
-
   const octokit = new Octokit(octokitOptions);
-
   try {
     let repositories;
     if (process.env.VITE_GIT_PAT) {
@@ -35,6 +33,32 @@ router.route('/github').get(async (req, res) => {
     // eslint-disable-next-line no-console
     console.error('Erreur lors de la récupération des dépôts GitHub :', error);
     res.status(500).json({ error: 'Une erreur s\'est produite lors de la récupération des données depuis GitHub.' });
+  }
+});
+
+router.route('/contributors').get(async (req, res) => {
+  const { org, repo } = req.query;
+  const octokitOptions = {
+    request: { fetch },
+  };
+
+  if (process.env.VITE_GIT_PAT) {
+    octokitOptions.auth = process.env.VITE_GIT_PAT;
+  }
+
+  const octokit = new Octokit(octokitOptions);
+
+  try {
+    const response = await octokit.request(`GET /repos/${org}/${repo}/contributors`, {
+      org,
+      repo,
+    });
+    const contributors = response.data;
+    res.json(contributors);
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Erreur lors de la récupération des contributeurs:', error);
+    res.status(500).json({ error: 'Erreur lors de la récupération des contributeurs' });
   }
 });
 
