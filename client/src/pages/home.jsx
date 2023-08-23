@@ -65,7 +65,7 @@ export default function Home() {
       
       const response = await fetch(url);
       const data = await response.json();
-      const fetchedTools = data.tools || [];
+      const fetchedTools = data.repositories.data || [];
 
       toolsTmp.push(...fetchedTools);
 

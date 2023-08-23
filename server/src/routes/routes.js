@@ -30,12 +30,7 @@ router.route('/github').get(async (req, res) => {
         page: page || 1,
       });
     }
-
-    const tools = repositories.data.map((item) => ({ name: item.name,
-      description: item.description,
-      private: item.private,
-      language: item.language }));
-    res.json({ tools });
+    res.json({ repositories });
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error('Erreur lors de la récupération des dépôts GitHub :', error);
