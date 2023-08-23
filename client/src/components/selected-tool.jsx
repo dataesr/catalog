@@ -28,18 +28,21 @@ const formatDate = (date) => {
 export default function SelectedTool({ tool }) {
   const [contributors, setContributors] = useState([]);
 
- useEffect(() => {
-    async function fetchContributors() {
-      try {
-        const response = await fetch(`/api/contributors?org=dataesr&repo=${tool.name}`);
-        const contributors = await response.json();
-        setContributors(contributors);
-      } catch (error) {
-        console.error('Erreur pendant le fetch des contributeurs (front)', error);
-      }
+useEffect(() => {
+  async function fetchContributors() {
+    try {
+      let url = `${import.meta.env.VITE_GITHUB_URL_CONTRIBUTORS.replace("/REPO/", `/${tool.name}/`)}`;
+      const response = await fetch(`${url}/?org=dataesr&repo=${tool.name}`);
+      const body = await response.json();
+      const contributorsArray = Object.keys(body).map(key => body[key]);
+      setContributors(contributorsArray);
+    } catch (error) {
+      console.error('Erreur pendant le fetch des contributeurs (front)', error);
     }
-    fetchContributors();
-  }, [tool]);
+  }
+  fetchContributors();
+}, [tool]);
+
 
   return (
     <div className='fr-ml-2w'>

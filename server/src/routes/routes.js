@@ -5,7 +5,7 @@ import fetch from 'node-fetch';
 
 const router = new express.Router();
 
-router.route('/github').get(async (req, res) => {
+router.route('/github/repos').get(async (req, res) => {
   const { page } = req.query;
   const octokitOptions = {
     request: { fetch },
@@ -16,19 +16,12 @@ router.route('/github').get(async (req, res) => {
   }
   const octokit = new Octokit(octokitOptions);
   try {
-    let repositories;
-    if (process.env.VITE_GIT_PAT) {
-      repositories = await octokit.request(`GET /orgs/{org}/repos?sort=updated_at&page=${page}`, {
-        org: 'dataesr',
-        page: page || 1,
-      });
-    } else {
-      repositories = await octokit.request(`GET /orgs/{org}/repos?sort=updated_at&page=${page}&type=public`, {
-        org: 'dataesr',
-        page: page || 1,
-      });
-    }
-    res.json({ repositories });
+    const response = await octokit.request(`GET /orgs/{org}/repos?sort=updated_at&page=${page || 1}`, {
+      org: 'dataesr',
+    });
+    const repositories = response.data;
+
+    res.json(repositories);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error('Erreur lors de la récupération des dépôts GitHub :', error);
@@ -36,7 +29,7 @@ router.route('/github').get(async (req, res) => {
   }
 });
 
-router.route('/contributors').get(async (req, res) => {
+router.route('/github/contributors').get(async (req, res) => {
   const { org, repo } = req.query;
   const octokitOptions = {
     request: { fetch },

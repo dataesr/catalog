@@ -14,6 +14,7 @@ import ToolCard from '../components/tool-card';
 const FALLBACK_CHECKBOX_LABEL = 'Aucun';
 const GITHUB_PER_PAGE = 30;
 
+
 const normalize = (str) => str
   .toLowerCase()
   .normalize('NFD')
@@ -56,23 +57,23 @@ export default function Home() {
       setSelectedVisibility([...selectedVisibility, itemKey])
     }
   };
+
   useEffect(() => {
   const toolsTmp = [];
 
   async function fetchRepositories({ page }) {
     try {
-      let url = `/api/github?page=${page}`;
+      let url = `${import.meta.env.VITE_GITHUB_URL_REPOS}?page=${page}`;
       
-      const response = await fetch(url);
-      const data = await response.json();
-      const fetchedTools = data.repositories.data || [];
+      const body = await fetch(url)
+      const response = await body.json()
+      const fetchedTools = response || [];
 
       toolsTmp.push(...fetchedTools);
-
       if (fetchedTools.length === GITHUB_PER_PAGE) {
         fetchRepositories({ page: page + 1 });
       } else {
-        setTools(toolsTmp);
+        setTools(toolsTmp); 
       }
     } catch (error) {
       console.error('Erreur lors de la récupération des dépôts depuis le backend :', error);
@@ -81,7 +82,6 @@ export default function Home() {
 
   fetchRepositories({ page: 1 });
 }, []);
-
 
   useEffect(() => {
     const allLanguages = {};
