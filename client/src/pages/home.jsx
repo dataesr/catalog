@@ -10,10 +10,12 @@ import { useEffect, useState } from 'react';
 import SelectedTool from '../components/selected-tool';
 import { Spinner } from '../components/spinner';
 import ToolCard from '../components/tool-card';
+import metaData from '../data/meta.json';
+
+const { VITE_GITHUB_URL_REPOS } = import.meta.env;
 
 const FALLBACK_CHECKBOX_LABEL = 'Aucun';
 const GITHUB_PER_PAGE = 30;
-
 
 const normalize = (str) => str
   .toLowerCase()
@@ -36,7 +38,7 @@ export default function Home() {
       const selectedLanguagesCopy = [...selectedLanguages].filter((item) => item !== itemKey);
       setSelectedLanguages(selectedLanguagesCopy);
     } else {
-      setSelectedLanguages([...selectedLanguages, itemKey])
+      setSelectedLanguages([...selectedLanguages, itemKey]);
     }
   };
 
@@ -45,7 +47,7 @@ export default function Home() {
       const selectedLicensesCopy = [...selectedLicenses].filter((item) => item !== itemKey);
       setSelectedLicenses(selectedLicensesCopy);
     } else {
-      setSelectedLicenses([...selectedLicenses, itemKey])
+      setSelectedLicenses([...selectedLicenses, itemKey]);
     }
   };
 
@@ -54,30 +56,31 @@ export default function Home() {
       const selectedVisibilityCopy = [...selectedVisibility].filter((item) => item !== itemKey);
       setSelectedVisibility(selectedVisibilityCopy);
     } else {
-      setSelectedVisibility([...selectedVisibility, itemKey])
+      setSelectedVisibility([...selectedVisibility, itemKey]);
     }
   };
 
   useEffect(() => {
-    const toolsTmp = [];
-
-    async function fetchRepositories({ page }) {
+    const toolsTmp = {};
+    async function fetchTools({ page }) {
       try {
-        const response = await fetch(`${import.meta.env.VITE_GITHUB_URL_REPOS}page=${page}`);
-        const body = await response.json();
-        const fetchedTools = body || [];
-        toolsTmp.push(...fetchedTools);
-        if (fetchedTools.length === GITHUB_PER_PAGE) {
-          fetchRepositories({ page: page + 1 });
+        const response = await fetch(`${VITE_GITHUB_URL_REPOS}page=${page}`);
+        const repositories = await response.json();
+        repositories.forEach((repository) => toolsTmp[repository.name] = repository);
+        if (repositories.length === GITHUB_PER_PAGE) {
+          fetchTools({ page: page + 1 });
         } else {
-          setTools(toolsTmp);
+          // Override with public metadata
+          Object.keys(metaData).forEach((name) => {
+            toolsTmp[name] = { ...toolsTmp[name], ...metaData[name] };
+          });
+          setTools(Object.values(toolsTmp));
         }
       } catch (error) {
         console.error('Error while fetching repos : ', error);
       }
     }
-
-    fetchRepositories({ page: 1 });
+    fetchTools({ page: 1 });
   }, []);
 
   useEffect(() => {

@@ -7,21 +7,13 @@ const router = new express.Router();
 
 router.route('/github/repos').get(async (req, res) => {
   const { page } = req.query;
-  const octokitOptions = {
-    request: { fetch },
-  };
-
-  if (process.env.VITE_GIT_PAT) {
-    octokitOptions.auth = process.env.VITE_GIT_PAT;
-  }
-  const octokit = new Octokit(octokitOptions);
   try {
+    const octokitOptions = process?.env?.VITE_GIT_PAT ? { auth: process.env.VITE_GIT_PAT } : {};
+    const octokit = new Octokit(octokitOptions);
     const response = await octokit.request(`GET /orgs/{org}/repos?sort=updated_at&page=${page || 1}`, {
       org: 'dataesr',
     });
-    const repositories = response.data;
-
-    res.json(repositories);
+    res.status(200).json(response.data);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error('Error while fetching repos :', error);
@@ -31,23 +23,14 @@ router.route('/github/repos').get(async (req, res) => {
 
 router.route('/github/contributors').get(async (req, res) => {
   const { repo } = req.query;
-  const octokitOptions = {
-    request: { fetch },
-  };
-
-  if (process.env.VITE_GIT_PAT) {
-    octokitOptions.auth = process.env.VITE_GIT_PAT;
-  }
-
-  const octokit = new Octokit(octokitOptions);
-
   try {
+    const octokitOptions = process?.env?.VITE_GIT_PAT ? { auth: process.env.VITE_GIT_PAT } : {};
+    const octokit = new Octokit(octokitOptions);
     const response = await octokit.request(`GET /repos/{org}/{repo}/contributors`, {
       org: 'dataesr',
       repo,
     });
-    const contributors = response.data;
-    res.json(contributors);
+    res.status(200).json(response.data);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error('Error while fetching contributors', error);

@@ -37,6 +37,7 @@ export default function SelectedTool({ tool }) {
         console.error('Error while fetching contributors', error);
       }
     }
+    setContributors([]);
     fetchContributors();
   }, [tool]);
 

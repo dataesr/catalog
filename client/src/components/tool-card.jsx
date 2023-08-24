@@ -1,10 +1,9 @@
 import { Card, CardDescription, Icon } from '@dataesr/react-dsfr';
 
-export default function ToolCard({ key, setSelectedTool, tool }) {
+export default function ToolCard({ setSelectedTool, tool }) {
   return (
     <Card
       href={tool?.html_url}
-      key={key}
       onClick={() => setSelectedTool(tool)}
     >
       <CardDescription>
