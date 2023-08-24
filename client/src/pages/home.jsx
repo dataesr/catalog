@@ -10,9 +10,9 @@ import { useEffect, useState } from 'react';
 import SelectedTool from '../components/selected-tool';
 import { Spinner } from '../components/spinner';
 import ToolCard from '../components/tool-card';
-import metaData from '../data/meta.json';
+import publicMetadata from '../data/meta.json';
 
-const { VITE_GITHUB_URL_REPOS } = import.meta.env;
+const { VITE_GITHUB_URL_REPOS, VITE_PRIVATE_METADATA_URL } = import.meta.env;
 
 const FALLBACK_CHECKBOX_LABEL = 'Aucun';
 const GITHUB_PER_PAGE = 30;
@@ -71,9 +71,16 @@ export default function Home() {
           fetchTools({ page: page + 1 });
         } else {
           // Override with public metadata
-          Object.keys(metaData).forEach((name) => {
-            toolsTmp[name] = { ...toolsTmp[name], ...metaData[name] };
+          Object.keys(publicMetadata).forEach((name) => {
+            toolsTmp[name] = { ...toolsTmp?.[name], ...publicMetadata[name] };
           });
+          // Override with private metadata
+          if (VITE_PRIVATE_METADATA_URL) {
+            const privateMetadata = await fetch(VITE_PRIVATE_METADATA_URL);
+            Object.keys(privateMetadata).forEach((name) => {
+              toolsTmp[name] = { ...toolsTmp?.[name], ...privateMetadata[name] };
+            });
+          }
           setTools(Object.values(toolsTmp));
         }
       } catch (error) {

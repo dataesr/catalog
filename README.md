@@ -14,5 +14,4 @@ npm i && npm start
 
 ## Private metadata
 
-To add your private metadata, create a file `my_metadata.json` in `/client/src/data`.
-Set your env var `VITE_PRIVATE_METADATA='../data/my_metadata.json'` in your `.env.local` file in the `client` directory.
+To add your private metadata, set your env var `VITE_PRIVATE_METADATA_URL=url.to.your/file.json` in your `.env.local` file in the `client` directory.
