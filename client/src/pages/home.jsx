@@ -76,7 +76,8 @@ export default function Home() {
           });
           // Override with private metadata
           if (VITE_PRIVATE_METADATA_URL) {
-            const privateMetadata = await fetch(VITE_PRIVATE_METADATA_URL);
+            const response = await fetch(VITE_PRIVATE_METADATA_URL);
+            const privateMetadata = await response.json();
             Object.keys(privateMetadata).forEach((name) => {
               toolsTmp[name] = { ...toolsTmp?.[name], ...privateMetadata[name] };
             });
