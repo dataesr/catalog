@@ -76,9 +76,11 @@ export default function Home() {
           });
           // Override with private metadata
           const privateMetadata = await fetch ('/api/privatemetadata');
+          console.log(privateMetadata);
           Object.keys(privateMetadata).forEach((name) => {
             toolsTmp[name] = { ...toolsTmp?.[name], ...privateMetadata[name] };
           });
+          console.log(toolsTmp);
           setTools(Object.values(toolsTmp));
         }
       } catch (error) {
