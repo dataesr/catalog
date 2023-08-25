@@ -1,5 +1,5 @@
-import express from 'express';
 import { Octokit } from '@octokit/core';
+import express from 'express';
 
 const router = new express.Router();
 
