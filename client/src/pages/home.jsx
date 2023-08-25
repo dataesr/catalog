@@ -75,12 +75,11 @@ export default function Home() {
             toolsTmp[name] = { ...toolsTmp?.[name], ...publicMetadata[name] };
           });
           // Override with private metadata
-          const privateMetadata = await fetch ('/api/privatemetadata');
-          console.log(privateMetadata);
+          const response = await fetch ('/api/privatemetadata');
+          const privateMetadata = await response.json();
           Object.keys(privateMetadata).forEach((name) => {
             toolsTmp[name] = { ...toolsTmp?.[name], ...privateMetadata[name] };
           });
-          console.log(toolsTmp);
           setTools(Object.values(toolsTmp));
         }
       } catch (error) {
