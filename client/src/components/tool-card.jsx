@@ -1,36 +1,39 @@
-import { Card, CardDescription, Icon } from '@dataesr/react-dsfr';
+import { Card, CardDescription, Icon, Text } from "@dataesr/react-dsfr";
+import { capitalize } from "../utils/string";
 
 export default function ToolCard({ setSelectedTool, tool }) {
   return (
-    <Card
-      href={tool?.html_url}
-      onClick={() => setSelectedTool(tool)}
-    >
+    <Card href={tool?.html_url} onClick={() => setSelectedTool(tool)}>
       <CardDescription>
-        <div>
-          {tool.name}
-          {' '}
-          <Icon name={tool?.private ? 'ri-lock-line' : 'ri-lock-unlock-line'} />
-        </div>
+        <d>
+          <Text as="h1">
+            {capitalize(tool.name).replaceAll("_", " ").replaceAll("-", " ")}
+          </Text>
+          {tool?.private && (
+            <Text>
+              Private <Icon size="lg" name="ri-git-repository-private-line" />
+            </Text>
+          )}
+        </d>
         {tool?.description && (
           <div>
-            <Icon name='ri-pen-nib-line' />
+            <Icon size="lg" name="ri-pen-nib-line" />
             {tool.description}
           </div>
         )}
         {tool?.license?.name && (
           <div>
-            <Icon name='ri-scales-3-line' />
+            <Icon size="lg" name="ri-scales-3-line" />
             {tool.license.name}
           </div>
         )}
         {tool?.language && (
           <div>
-            <Icon name='ri-code-s-slash-line' />
+            <Icon size="lg" name="ri-code-s-slash-line" />
             {tool.language}
           </div>
         )}
       </CardDescription>
     </Card>
   );
-};
+}

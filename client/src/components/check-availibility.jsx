@@ -45,7 +45,7 @@ export default function CheckAvailability({ url }) {
       <Link href={url} target='_blank'>
         {url}
       </Link>
-      <Icon name={getIconByStatus(status)} color={getColorByStatus(status)} />
+      <Icon size='lg' name={getIconByStatus(status)} color={getColorByStatus(status)} />
     </div>
   );
 }
